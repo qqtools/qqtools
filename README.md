@@ -26,7 +26,7 @@ commands written in Python.
  of each qqtools command invocation. For example, you may want your qqtools editor to be `vim`, but
  your system-wide editor to be `nano`, so you can leave your `.bash_profile` alone and put
  ```bash
- export EDITOR="vim"
+ EDITOR="vim"
  ```
  in your `.qqd/config` file.
 
