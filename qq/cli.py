@@ -9,7 +9,7 @@ import os
 import re
 
 from os import path
-from .common import instantiate_command, QQBadInvocation
+from .common import instantiate_command, QQBadInvocation, is_debug
 
 
 
@@ -37,6 +37,8 @@ def main():
     except Exception as e:
         print('Failed to instantiate command: ' + command_name)
         print(e)
+        if is_debug():
+            raise
     if not inst:
         print('Command not found: ' + command_name)
         exit(1)
@@ -53,11 +55,15 @@ def main():
             exit(1)
         print('Unexpected failure in command: ' + command_name)
         print(e)
+        if is_debug():
+            raise
 
     except Exception as e:
         print('Unexpected error in command: ' + command_name)
         print('')
         print(e)
+        if is_debug():
+            raise
 
 
 if __name__ == '__main__':

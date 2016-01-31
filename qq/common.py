@@ -55,6 +55,11 @@ class QQCommand(object):
         return "No help available."
 
 
+def is_debug():
+    """Returns True if the QQDEBUG environment variable is set."""
+    return os.environ.get('QQDEBUG', None) is not None
+
+
 def shell_execute(cmd):
     """Execute a bash command inside the calling shell."""
     script = os.environ.get('QQTOOLS_OUTPUT_SCRIPT', None)
@@ -121,3 +126,8 @@ def get_data_filename(filename):
 
 def output(*args, **kwargs):
     print(*args, **kwargs)
+
+
+def debug(*args, **kwargs):
+    if is_debug():
+        print(*args, **kwargs)
