@@ -6,21 +6,21 @@ commands written in Python.
 # Installation
 1. Pick an installation location (your home directory, for example). The recommended directory name is `.qqd`.
 
-```console
-$ cd ~
-$ git clone https://github.com/sbroadhead/qqtools.git
-$ mv qqtools .qqd
-```
+ ```console
+ $ cd ~
+ $ git clone https://github.com/sbroadhead/qqtools.git
+ $ mv qqtools .qqd
+ ```
 
 2. Set the QQTOOLS_HOME environment variable in your `.bash_profile`:
-```bash
-export QQTOOLS_HOME=/home/user/.qqd
-```
+ ```bash
+ export QQTOOLS_HOME=/home/user/.qqd
+ ```
 
 3. Set up a Bash alias to the command runner in your `.bash_profile`:
-```bash
-alias qq="source $QQTOOLS_HOME/qq.sh"
-```
+ ```bash
+ alias qq="source $QQTOOLS_HOME/qq.sh"
+ ```
 
 The alias is required, since qqtools commands may want to modify the current shell's environment (for example, to change the current directory). This is done by serializing shell commands to a temporary shell script and reading it using `source`, so the script runner itself must be `source`d as well, or else the effects would only apply to the sub-shell executing the script runner.
 
