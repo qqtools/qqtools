@@ -70,7 +70,7 @@ The `qq.shell_execute(cmd)` method is used to execute the command `cmd` in the e
 will cause the current directory to change to your home directory once the command has finished executing.
 
 ## Example command
-Here is an example command that can evaluate and print a Python expression, as well as store it in an environment variable in the calling shell. Place this in `.qqd/cmd`:
+Here is an example command that can evaluate and print a Python expression, as well as store it in an environment variable in the calling shell. Place this in `.qqd/cmd/eval_sample.py`:
 
 ```python
 import qq
@@ -79,15 +79,15 @@ class Eval(qq.QQCommand):
     name = 'eval'
     shorttext = 'Evaluate a python expression'
 
-  def execute(self, *args):
-      cmd = ' '.join(args)
-      qq.output('Evaluating {}...'.format(cmd))
-      result = eval(cmd)
-      qq.output(result)
-      qq.shell_execute('EVAL_RESULT="{}"'.format(result))
+    def execute(self, *args):
+        cmd = ' '.join(args)
+        qq.output('Evaluating {}...'.format(cmd))
+        result = eval(cmd)
+        qq.output(result)
+        qq.shell_execute('EVAL_RESULT="{}"'.format(result))
 
-  def help(self):
-      return '''Usage: qq eval EXPRESSION
+    def help(self):
+        return '''Usage: qq eval EXPRESSION
 Evaluate a Python expression and place the result in the EVAL_RESULT
 environment variable.'''
 ```
