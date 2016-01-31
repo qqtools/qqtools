@@ -6,24 +6,30 @@ commands written in Python.
 # Installation
 1. Pick an installation location (your home directory, for example). The recommended directory name is `.qqd`.
 
-        cd ~
-        git clone https://github.com/sbroadhead/qqtools.git
-        mv qqtools .qqd
+```console
+cd ~
+git clone https://github.com/sbroadhead/qqtools.git
+mv qqtools .qqd
+```
 
 2. Set the QQTOOLS_HOME environment variable in your `.bash_profile`:
-
-        export QQTOOLS_HOME=/home/user/.qqd
+```console
+export QQTOOLS_HOME=/home/user/.qqd
+```
 
 3. Set up a Bash alias to the command runner in your `.bash_profile`:
+```console
+alias qq="source $QQTOOLS_HOME/qq.sh"
+```
 
-        alias qq="source $QQTOOLS_HOME/qq.sh"
-
- The alias is required, since qqtools commands may want to modify the current shell's environment (for example, to change the current directory). This is done by serializing shell commands to a temporary shell script and reading it using `source`, so the script runner itself must be `source`d as well, or else the effects would only apply to the sub-shell executing the script runner.
+The alias is required, since qqtools commands may want to modify the current shell's environment (for example, to change the current directory). This is done by serializing shell commands to a temporary shell script and reading it using `source`, so the script runner itself must be `source`d as well, or else the effects would only apply to the sub-shell executing the script runner.
 
 # Usage
 Once qqtools is installed, simply invoke the `qq` alias to run a command.
 
-        qq COMMAND [ARGS...]
+```
+qq COMMAND [ARGS...]
+```
 
 # Default Commands
 By default the following commands are supplied:
@@ -99,8 +105,9 @@ for name, cmd in all_commands.itervalues():
 ## Executing in the calling shell
 The `qq.shell_execute(cmd)` method is used to execute the command `cmd` in the environment of the calling shell (using `source`). For example,
 
-        qq.shell_execute('cd ~')
-
+```
+qq.shell_execute('cd ~')
+```
 
 will cause the current directory to change to your home directory once the command has finished executing.
 
@@ -129,8 +136,10 @@ environment variable.'''
 
 Example:
 
-    $ qq eval "sum(xrange(1, 100))"
-    Evaluating sum(xrange(1, 100))...
-    4950
-    $ echo $EVAL_RESULT
-    4950
+```console
+$ qq eval "sum(xrange(1, 100))"
+Evaluating sum(xrange(1, 100))...
+4950
+$ echo ${EVAL_RESULT}
+4950
+```
