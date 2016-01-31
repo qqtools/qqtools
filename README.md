@@ -22,6 +22,14 @@ commands written in Python.
  alias qq="source $QQTOOLS_HOME/qq.sh"
  ```
 
+4. (optional) Create the file `.qqd/config`, which is a Bash script to be executed in the environment
+ of each qqtools command invocation. For example, you may want your qqtools editor to be `vim`, but
+ your system-wide editor to be `nano`, so you can leave your `.bash_profile` alone and put
+ ```bash
+ export EDITOR="vim"
+ ```
+ in your `.qqd/config` file.
+
 The alias is required, since qqtools commands may want to modify the current shell's environment (for example, to change the current directory). This is done by serializing shell commands to a temporary shell script and reading it using `source`, so the script runner itself must be `source`d as well, or else the effects would only apply to the sub-shell executing the script runner.
 
 # Usage
