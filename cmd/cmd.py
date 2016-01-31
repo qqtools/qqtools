@@ -21,6 +21,9 @@ class EditCommand(qq.QQCommand):
             qq.output('Failed to instantiate command: ' + command_name)
             qq.output(e)
             return False
+        if inst is None:
+            qq.output('Command not found: ' + command_name)
+            return False
         editor = os.environ.get('EDITOR', None)
         if editor is None:
             qq.output('The EDITOR environment variable is not set.')
