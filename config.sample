@@ -1,0 +1,3 @@
+# Create a file called config in your .qqd directory
+# It will be read by bash before each QQTools command invocation
+# Environment variables can be set here, for example
