@@ -28,7 +28,7 @@ class EditCommand(qq.QQCommand):
         if editor is None:
             qq.output('The EDITOR environment variable is not set.')
             return False
-        qq.shell_execute('"{}" {}'.format(editor, inst.fullpath))
+        qq.shell_execute('"{}" "{}"'.format(editor, inst.fullpath))
         return True
 
     def help(self):
