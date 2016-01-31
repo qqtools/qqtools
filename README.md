@@ -41,21 +41,23 @@ This is only a very small set of starter commands. New commands will be added as
 # Custom Commands
 qqtools is written in Python and its commands are implemented as Python functions. Any file with the extension `.py` in the `.qqd/cmd` directory is automatically inspected for classes that derive from `qq.QQCommand`. The `qq` package is automatically available for import from any command scripts and contains common functionality used to implement qqtools commands. Subclasses should provide a `name` attribute and implementations of `execute` and `help`.
 
-    class QQCommand(object):
-        # Commands must have a name in order to be registered
-        name = None
+```python
+class QQCommand(object):
+    # Commands must have a name in order to be registered
+    name = None
 
-        # Commands should have a short description less than 40 characters long
-        shorttext = ""
+    # Commands should have a short description less than 40 characters long
+    shorttext = ""
 
-        def execute(*args, **kwargs):
-            """Execute this command."""
-            raise NotImplementedError()
+    def execute(*args, **kwargs):
+        """Execute this command."""
+        raise NotImplementedError()
 
-        def help(self):
-            """Return help text about this command."""
-            # Subclasses should override this too
-            return "No help available."
+    def help(self):
+        """Return help text about this command."""
+        # Subclasses should override this too
+        return "No help available."
+```
 
 qqtools makes sure that a compatible number of arguments are supplied to the `execute` method, and responds with the help text if not.
 
@@ -70,23 +72,25 @@ will cause the current directory to change to your home directory once the comma
 ## Example command
 Here is an example command that can evaluate and print a Python expression, as well as store it in an environment variable in the calling shell. Place this in `.qqd/cmd`:
 
-    import qq
+```python
+import qq
 
-    class Eval(qq.QQCommand):
-        name = 'eval'
-        shorttext = 'Evaluate a python expression'
+class Eval(qq.QQCommand):
+    name = 'eval'
+    shorttext = 'Evaluate a python expression'
 
-        def execute(self, *args):
-            cmd = ' '.join(args)
-            qq.output('Evaluating {}...'.format(cmd))
-            result = eval(cmd)
-            qq.output(result)
-            qq.shell_execute('EVAL_RESULT="{}"'.format(result))
+def execute(self, *args):
+    cmd = ' '.join(args)
+    qq.output('Evaluating {}...'.format(cmd))
+    result = eval(cmd)
+    qq.output(result)
+    qq.shell_execute('EVAL_RESULT="{}"'.format(result))
 
-        def help(self):
-            return '''Usage: qq eval EXPRESSION
-    Evaluate a Python expression and place the result in the EVAL_RESULT
-    environment variable.'''
+def help(self):
+    return '''Usage: qq eval EXPRESSION
+Evaluate a Python expression and place the result in the EVAL_RESULT
+environment variable.'''
+```
 
 Example:
 
