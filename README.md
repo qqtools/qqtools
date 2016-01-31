@@ -61,6 +61,41 @@ class QQCommand(object):
 
 qqtools makes sure that a compatible number of arguments are supplied to the `execute` method, and responds with the help text if not.
 
+## Basic command functionality
+The `qq` module exports some helpful functions and classes for commands to use.
+
+```python
+import qq
+
+# Print some text to the console
+qq.output('Hello there')
+
+# Get the name of a file relative to the .qqd/data directory
+filename = qq.get_data_filename('names.sqlite3')
+import sqlite3
+conn = sqlite3.connect(filename)
+# ....
+conn.close()
+
+# Instantiate another command by name
+mycommand = qq.instantiate_command('mycommand')
+
+# If the QQCommand object implementing 'mycommand' has a method
+# called custom_method(), then we can call it here
+foo = mycommand.custom_method()
+
+# We can execute it directly as well, passing the arguments as
+# though they were given on the command line
+mycommand.execute('foo', 'bar')
+
+# We can also get a dictionary of every available command, as a
+# map from the command name to the QQCommand class implementing
+# that command. We could reimplement the ls command using it:
+all_commands = qq.find_commands()
+for name, cmd in all_commands.itervalues():
+    print '{0}: {1}'.format(name, cmd.shorttext)
+```
+
 ## Executing in the calling shell
 The `qq.shell_execute(cmd)` method is used to execute the command `cmd` in the environment of the calling shell (using `source`). For example,
 
