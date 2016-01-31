@@ -1,0 +1,50 @@
+#!/bin/bash
+# qq gitolite init
+# Usage:
+#   qq gitolite init
+#
+# Upload a repository to Gitolite.
+# (based on http://git.zx2c4.com/GitTools/tree/uploadNewGit.sh)
+
+if [ -z "$GITOLITE_ADMIN" ]; then
+	echo The GITOLITE_ADMIN environment variable must be set.
+	exit 1
+fi
+
+if [ -z "$GITOLITE_USER" ]; then
+	echo The GITOLITE_USER environment variable must be set.
+	exit 1
+fi
+
+gitdir="$(readlink -f "$(pwd)")"
+name="$(basename "$gitdir" | cut -d / -f 2 | cut -d ' ' -f 1)"
+description="$1"
+
+if [ ! -d "$gitdir/.git" ]; then
+	echo "$0 must be run at the root of a git repository."
+	exit 1
+fi
+if [ -z "$description" ]; then
+	echo "Usage: $0 DESCRIPTION"
+	exit 1
+fi
+
+cd "$GITOLITE_ADMIN/conf"
+echo "Writing config.."
+cat >> gitolite.conf <<EOF
+
+	repo	$name
+		RW+CD	=   $(GITOLITE_USER)
+		R	=   @all
+		owner = "$(git config --get user.name)"
+		desc = "$description"
+EOF
+git commit -a -m "Adding $name to remote server."
+git push
+cd - > /dev/null
+
+url="$(git --git-dir="$GITOLITE_ADMIN/.git" remote -v | grep push | cut -f 2 | cut -d ' ' -f 1 | sed "s/$(basename "$GITOLITE_ADMIN")/$name/")"
+git remote rm origin 2> /dev/null || true
+git remote add origin $url
+git push -u --all
+git push --tags

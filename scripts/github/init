@@ -1,0 +1,39 @@
+#!/bin/bash
+# qq github init
+# Usage:
+#   qq github init
+#
+# Initialze this repository on Github.
+
+QQTOOLS_OUTPUT_PREFIX="github"
+
+if [ -z "$GITHUB_USER" ]; then
+	echo The GITHUB_USER environment variable must be set.
+	exit 1
+fi
+
+if [ -z "$GITHUB_AUTH_TOKEN" ]; then
+	echo The GITHUB_AUTH_TOKEN environment variable must be set.
+	exit 1
+fi
+
+gitdir="$(readlink -f "$(pwd)")"
+defaultname="$(basename "$gitdir" | cut -d / -f 2 | cut -d ' ' -f 1)"
+
+echo -n "New repo name [$defaultname]: "
+read reponame
+echo -n "Description []: "
+read description
+
+if [ ! -d "$gitdir/.git" ]; then
+	echo "$0 must be run at the root of a git repository."
+	exit 1
+fi
+
+name="${reponame:-"$defaultname"}"
+output "Creating Github repository '$name'..."
+curl -H "Authorization: Token $GITHUB_AUTH_TOKEN" https://api.github.com/user/repos -d "{\"name\": \"$name\", \"description\": \"$description\"}"
+
+output "Pushing repository..."
+git remote add origin "git@github.com:$GITHUB_USER/$name.git"
+git push --set-upstream origin master

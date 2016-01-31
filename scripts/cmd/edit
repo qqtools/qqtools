@@ -1,0 +1,48 @@
+#!/bin/bash
+# qq cmd edit
+# Usage:
+#   qq cmd edit [group1/[group2/...]]<command>
+#
+# Edit a script (creating it and the containing groups if necessary)
+# using the editor specified in the EDITOR environment variable.
+
+QQTOOLS_OUTPUT_PREFIX="cmd"
+
+if [ -z "$1" ]; then
+  echo "Usage:"
+  echo "  qq edit [group1/group2/.../]command"
+  exit 1
+fi
+
+base="$(dirname $1)"
+cmd="$(basename $1)"
+
+scriptdir="$QQTOOLS_HOME/scripts/$base"
+scriptpath="$scriptdir/$cmd"
+
+# split a/b/c into a b c
+IFS='/' read -r -a baseparts <<< "${base%.}"
+if [ ! -z "$baseparts" ]; then
+  baseparts="$baseparts "
+fi
+
+mkdir -p "$scriptdir"
+
+if [ ! -e "$scriptpath" ]; then
+  output "Creating script..."
+  cat >> "$scriptpath" << EOF
+#!/bin/bash
+# qq $baseparts$cmd
+# Usage:
+#   qq $baseparts$cmd
+#
+# Enter a description here.
+
+EOF
+fi
+
+
+EDITOR="${EDITOR:=nano}"
+"$EDITOR" "$scriptpath"
+
+

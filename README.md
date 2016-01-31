@@ -105,7 +105,7 @@ for name, cmd in all_commands.itervalues():
 ## Executing in the calling shell
 The `qq.shell_execute(cmd)` method is used to execute the command `cmd` in the environment of the calling shell (using `source`). For example,
 
-```
+```python
 qq.shell_execute('cd ~')
 ```
 

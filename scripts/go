@@ -1,0 +1,27 @@
+#!/bin/bash
+# qq go
+# Usage:
+#   qq go <subfolder>
+#
+# Jump to a folder previously tagged by 'qq fav'.
+
+QQTOOLS_OUTPUT_PREFIX="go"
+
+name="$1"
+
+if [ -z "$name" ]; then
+  output "Usage:"
+  output "qq go [subfolder]"
+  output
+  output "Jump to a folder previously tagged by 'qq fav'."
+  exit 1
+fi
+
+favpath="$QQTOOLS_HOME/favs/$name" 
+if [ ! -e "$favpath" ]; then
+  output "The tag '$name' does not exist."
+  exit 1
+fi
+path=$(cat "$favpath")
+
+echo "cd $path" > "$QQTOOLS_OUTPUT_SCRIPT"

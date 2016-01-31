@@ -1,0 +1,44 @@
+#!/bin/bash
+# qq cmd delete
+# Usage:
+#   qq cmd delete
+#
+# Enter a description here.
+
+QQTOOLS_OUTPUT_PREFIX="cmd"
+
+if [ -z "$1" ]; then
+  output "Usage:"
+  output "  qq cmd delete [group1/group2/.../]command"
+  exit 1
+fi
+
+base="$(dirname $1)"
+cmd="$(basename $1)"
+
+scriptdir="$QQTOOLS_HOME/scripts/$base"
+scriptpath="$scriptdir/$cmd"
+
+# split a/b/c into a b c
+IFS='/' read -r -a baseparts <<< "${base%.}"
+if [ ! -z "$baseparts" ]; then
+  baseparts="$baseparts "
+fi
+
+if [ ! -e "$scriptpath" ]; then
+  output "The script '$1' does not exist."
+  exit 1
+fi
+
+read -p "[$QQTOOLS_OUTPUT_PREFIX] Are you sure? " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+  output "Deleting script '$1'..."
+  rm -f "$scriptpath"
+  if [ ! "$(ls -A "$scriptdir")" ]; then
+    output "Deleting empty group '$base'..."
+    rmdir "$scriptdir"
+  fi
+fi
+
