@@ -108,22 +108,14 @@ def instantiate_command(command_name):
     return None
 
 
-def open_file(filename, mode='r'):
-    """
-    Open a file in the QQTools data directory.
-    """
-    try:
-        os.makedirs(script_dir)
-    except OSError:
-        pass
-    return open(path.join(data_dir, filename), mode)
-
-
-
 def get_data_filename(filename):
     """
     Get a filename within the QQTools data directory.
     """
+    try:
+        os.makedirs(data_dir)
+    except OSError:
+        pass
     return path.join(data_dir, filename)
 
 
