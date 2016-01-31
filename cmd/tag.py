@@ -9,18 +9,13 @@ import os
 import re
 
 
-@contextlib.contextmanager
-def database():
-    conn = sqlite3.connect(qq.get_data_filename('tags.sqlite3'))
-    conn.row_factory = sqlite3.Row
-    conn.isolation_level = None
-    conn.create_function('regexp', 2, lambda pattern, item: re.match(pattern, item) is not None)
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS tag (name text, path text)
-    ''')
-    yield conn
-    conn.close()
-
+_DB_NAME = 'tags'
+_SCHEMA = {
+    'tag': [
+        ('name', 'text'),
+        ('path', 'text')
+    ]
+}
 
 class TagCommand(qq.QQCommand):
     """
@@ -39,13 +34,13 @@ class TagCommand(qq.QQCommand):
             name = args[1]
         else:
             raise qq.QQBadInvocation()
-        with database() as conn:
+        with contextlib.closing(qq.get_storage(_DB_NAME, _SCHEMA)) as conn:
             cur = conn.cursor()
             cur.execute('BEGIN TRANSACTION')
             cur.execute('DELETE FROM tag WHERE name = ?', (name,))
             cur.execute('INSERT INTO tag (name, path) VALUES (?, ?)', (name, path))
             cur.execute('COMMIT')
-            qq.output('Tagged folder {} with name "{}".'.format(path, name))
+        qq.output('Tagged folder {} with name "{}".'.format(path, name))
         return True
 
     def help(self):
@@ -66,7 +61,7 @@ class ListTagsCommand(qq.QQCommand):
     def execute(self, pattern=None):
         pattern = pattern or '.*'
         qq.output('Tagged folders matching the pattern {}:'.format(pattern))
-        with database() as conn:
+        with contextlib.closing(qq.get_storage(_DB_NAME, _SCHEMA)) as conn:
             cur = conn.cursor()
             found = False
             for row in cur.execute('SELECT name, path FROM tag WHERE name REGEXP ? ORDER BY name', (pattern,)):
@@ -91,7 +86,7 @@ class DeleteTagCommand(qq.QQCommand):
     shorttext = 'Delete a tagged folder'
 
     def execute(self, name):
-        with database() as conn:
+        with contextlib.closing(qq.get_storage(_DB_NAME, _SCHEMA)) as conn:
             cur = conn.cursor()
             row = cur.execute('SELECT name, path FROM tag WHERE name = ?', (name,)).fetchone()
             if not row:
@@ -117,7 +112,7 @@ class GoToTagCommand(qq.QQCommand):
     shorttext = 'Jump to a tagged folder'
 
     def execute(self, name):
-        with database() as conn:
+        with contextlib.closing(qq.get_storage(_DB_NAME, _SCHEMA)) as conn:
             cur = conn.cursor()
             row = cur.execute('SELECT name, path FROM tag WHERE name = ?', (name,)).fetchone()
             if not row:
