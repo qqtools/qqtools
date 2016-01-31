@@ -4,6 +4,8 @@ qqtools allows command-line users to organize and execute
 commands written in Python.
 
 # Installation
+0. Make sure you have Python installed and available in your system path under the name `python`.
+
 1. Pick an installation location (your home directory, for example). The recommended directory name is `.qqd`.
 
  ```console
