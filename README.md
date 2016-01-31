@@ -7,18 +7,18 @@ commands written in Python.
 1. Pick an installation location (your home directory, for example). The recommended directory name is `.qqd`.
 
 ```console
-cd ~
-git clone https://github.com/sbroadhead/qqtools.git
-mv qqtools .qqd
+$ cd ~
+$ git clone https://github.com/sbroadhead/qqtools.git
+$ mv qqtools .qqd
 ```
 
 2. Set the QQTOOLS_HOME environment variable in your `.bash_profile`:
-```console
+```bash
 export QQTOOLS_HOME=/home/user/.qqd
 ```
 
 3. Set up a Bash alias to the command runner in your `.bash_profile`:
-```console
+```bash
 alias qq="source $QQTOOLS_HOME/qq.sh"
 ```
 
