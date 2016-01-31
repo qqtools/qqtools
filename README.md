@@ -79,15 +79,15 @@ class Eval(qq.QQCommand):
     name = 'eval'
     shorttext = 'Evaluate a python expression'
 
-def execute(self, *args):
-    cmd = ' '.join(args)
-    qq.output('Evaluating {}...'.format(cmd))
-    result = eval(cmd)
-    qq.output(result)
-    qq.shell_execute('EVAL_RESULT="{}"'.format(result))
+  def execute(self, *args):
+      cmd = ' '.join(args)
+      qq.output('Evaluating {}...'.format(cmd))
+      result = eval(cmd)
+      qq.output(result)
+      qq.shell_execute('EVAL_RESULT="{}"'.format(result))
 
-def help(self):
-    return '''Usage: qq eval EXPRESSION
+  def help(self):
+      return '''Usage: qq eval EXPRESSION
 Evaluate a Python expression and place the result in the EVAL_RESULT
 environment variable.'''
 ```
