@@ -24,7 +24,6 @@ QQTOOLS_OUTPUT_SCRIPT=$(PYTHONPATH="$QQTOOLS_HOME" python -m qq.mktemp)
   PYTHONPATH="$QQTOOLS_HOME" python -m qq.cli $*
   exit $?
 )
-QQTOOLS_EXIT_CODE=$?
 
 if [ -r "$QQTOOLS_OUTPUT_SCRIPT" ]; then
   source "$QQTOOLS_OUTPUT_SCRIPT"
@@ -32,4 +31,3 @@ if [ -r "$QQTOOLS_OUTPUT_SCRIPT" ]; then
 fi
 
 unset QQTOOLS_OUTPUT_SCRIPT
-unset QQTOOLS_EXIT_CODE
