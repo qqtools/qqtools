@@ -87,6 +87,9 @@ def find_commands(cache=True):
                         obj = getattr(mod, name)
                         cmd_name = getattr(obj, 'name', None)
                         if cmd_name is not None and QQCommand in getattr(obj, '__mro__', []):
+                            if getattr(obj, 'abstract', False):
+                                # Don't consider abstract commands to be commands
+                                continue
                             obj.fullpath = fullpath
                             commands[cmd_name] = obj
                 except Exception as e:
