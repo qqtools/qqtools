@@ -10,17 +10,13 @@ import inspect
 
 from os import path
 
+qq_dir = path.dirname(path.dirname(path.abspath(__file__)))
+
 # Scripts folder is (from this file) ../scripts/
-command_dir = path.join(
-    path.dirname(path.dirname(path.abspath(__file__))),
-    'cmd'
-)
+command_dir = path.join(qq_dir, 'cmd')
 
 # Data folder is ../data/
-data_dir = path.join(
-    path.dirname(path.dirname(path.abspath(__file__))),
-    'data'
-)
+data_dir = path.join(qq_dir, 'data')
 
 _command_cache = None
 
