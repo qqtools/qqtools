@@ -2,3 +2,4 @@ config
 data/
 *.pyc
 .idea/
+.venv
