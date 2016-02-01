@@ -17,6 +17,11 @@ _SCHEMA = {
     ]
 }
 
+
+def storage_context():
+    return contextlib.closing(qq.get_storage(_DB_NAME, _SCHEMA))
+
+
 class TagCommand(qq.QQCommand):
     """
     Tag a folder to return to later.
@@ -34,7 +39,7 @@ class TagCommand(qq.QQCommand):
             name = args[1]
         else:
             raise qq.QQBadInvocation()
-        with contextlib.closing(qq.get_storage(_DB_NAME, _SCHEMA)) as conn:
+        with storage_context() as conn:
             cur = conn.cursor()
             cur.execute('BEGIN TRANSACTION')
             cur.execute('DELETE FROM tag WHERE name = ?', (name,))
@@ -61,7 +66,7 @@ class ListTagsCommand(qq.QQCommand):
     def execute(self, pattern=None):
         pattern = pattern or '.*'
         qq.output('Tagged folders matching the pattern {}:'.format(pattern))
-        with contextlib.closing(qq.get_storage(_DB_NAME, _SCHEMA)) as conn:
+        with storage_context() as conn:
             cur = conn.cursor()
             found = False
             for row in cur.execute('SELECT name, path FROM tag WHERE name REGEXP ? ORDER BY name', (pattern,)):
@@ -86,7 +91,7 @@ class DeleteTagCommand(qq.QQCommand):
     shorttext = 'Delete a tagged folder'
 
     def execute(self, name):
-        with contextlib.closing(qq.get_storage(_DB_NAME, _SCHEMA)) as conn:
+        with storage_context() as conn:
             cur = conn.cursor()
             row = cur.execute('SELECT name, path FROM tag WHERE name = ?', (name,)).fetchone()
             if not row:
@@ -112,7 +117,7 @@ class GoToTagCommand(qq.QQCommand):
     shorttext = 'Jump to a tagged folder'
 
     def execute(self, name):
-        with contextlib.closing(qq.get_storage(_DB_NAME, _SCHEMA)) as conn:
+        with storage_context() as conn:
             cur = conn.cursor()
             row = cur.execute('SELECT name, path FROM tag WHERE name = ?', (name,)).fetchone()
             if not row:
