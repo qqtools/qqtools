@@ -1,25 +1,17 @@
 """
 Commands for dealing with tagged folders.
 """
+import collections
 
 import qq
-import sqlite3
-import contextlib
 import os
-import re
 
 
-_DB_NAME = 'tags'
-_SCHEMA = {
-    'tag': [
-        ('name', 'text'),
-        ('path', 'text')
-    ]
-}
-
-
-def storage_context():
-    return contextlib.closing(qq.get_storage(_DB_NAME, _SCHEMA))
+class TagStorage(qq.Storage):
+    def __init__(self):
+        super(TagStorage, self).__init__('tags')
+        if 'tags' not in self or not isinstance(self['tags'], collections.Mapping):
+            self['tags'] = dict()
 
 
 class TagCommand(qq.QQCommand):
@@ -39,12 +31,9 @@ class TagCommand(qq.QQCommand):
             name = args[1]
         else:
             raise qq.QQBadInvocation()
-        with storage_context() as conn:
-            cur = conn.cursor()
-            cur.execute('BEGIN TRANSACTION')
-            cur.execute('DELETE FROM tag WHERE name = ?', (name,))
-            cur.execute('INSERT INTO tag (name, path) VALUES (?, ?)', (name, path))
-            cur.execute('COMMIT')
+
+        tags = TagStorage()
+        tags['tags'][name] = path
         qq.output('Tagged folder {} with name "{}".'.format(path, name))
         return True
 
@@ -64,16 +53,14 @@ class ListTagsCommand(qq.QQCommand):
     shorttext = 'List tagged folders'
 
     def execute(self, pattern=None):
+        tags = TagStorage()
         pattern = pattern or '.*'
         qq.output('Tagged folders matching the pattern {}:'.format(pattern))
-        with storage_context() as conn:
-            cur = conn.cursor()
-            found = False
-            for row in cur.execute('SELECT name, path FROM tag WHERE name REGEXP ? ORDER BY name', (pattern,)):
-                found = True
-                qq.output(' * {0} ({1})'.format(row['name'], row['path']))
-        if not found:
+        if len(tags['tags']) == 0:
             print(' No tags found.')
+        else:
+            for name, path in tags['tags'].iteritems():
+                print(' * {0} ({1})'.format(name, path))
         return True
 
     def help(self):
@@ -91,16 +78,9 @@ class DeleteTagCommand(qq.QQCommand):
     shorttext = 'Delete a tagged folder'
 
     def execute(self, name):
-        with storage_context() as conn:
-            cur = conn.cursor()
-            row = cur.execute('SELECT name, path FROM tag WHERE name = ?', (name,)).fetchone()
-            if not row:
-                qq.output('Tag not found: ' + name)
-                return False
-            cur.execute('BEGIN TRANSACTION')
-            cur.execute('DELETE FROM tag WHERE name = ?', (name,))
-            cur.execute('COMMIT')
-            qq.output('Untagged folder {} with name "{}"'.format(row['path'], row['name']))
+        tags = TagStorage()
+        tags['tags'].pop(name, None)
+        qq.output('Untagged folder {} with name "{}"'.format(row['path'], row['name']))
         return True
 
     def help(self):
@@ -117,14 +97,13 @@ class GoToTagCommand(qq.QQCommand):
     shorttext = 'Jump to a tagged folder'
 
     def execute(self, name):
-        with storage_context() as conn:
-            cur = conn.cursor()
-            row = cur.execute('SELECT name, path FROM tag WHERE name = ?', (name,)).fetchone()
-            if not row:
-                qq.output('Tag not found: ' + name)
-                return False
-            qq.shell_execute('cd "{}"'.format(row['path']))
-            qq.output('Now in tagged folder "{}" ({})'.format(name, row['path']))
+        tags = TagStorage()
+        if name not in tags['tags']:
+            qq.output('Tag not found: ' + name)
+            return False
+        path = tags['tags'][name]
+        qq.shell_execute('cd "{}"'.format(path))
+        qq.output('Changing to tagged folder "{}" ({})'.format(name, path))
         return True
 
     def help(self):

@@ -42,7 +42,7 @@ class QQCommand(object):
     # Commands should have a short description less than 40 characters long
     shorttext = ""
 
-    def execute(*args, **kwargs):
+    def execute(self, *args, **kwargs):
         """Execute this command."""
         raise NotImplementedError()
 

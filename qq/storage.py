@@ -1,54 +1,166 @@
 """
 Simple data storage functionality via Sqlite.
 """
+import collections
+import json
+import os
 
-import sqlite3
 import qq.common as qq
-import re
 
 
-def create_schema(conn, schema):
+def to_serializable(obj):
     """
-    Create the schema in an Sqlite database if it does not already exist.
+    Convert an object to a serializable dictionary.
     """
-    for table_name, table_def in schema.iteritems():
-        sql = 'create table if not exists {0} ({1})'.format(
-            table_name,
-            ', '.join(field_name + ' ' + field_def for field_name, field_def in table_def)
-        )
-        qq.debug('Creating schema: ' + sql)
-        conn.execute(sql)
+    if isinstance(obj, basestring):
+        return obj
+    if isinstance(obj, ArrayProxy):
+        r = []
+        for x in obj:
+            r.append(to_serializable(x))
+        return r
+    elif isinstance(obj, ObjectProxy):
+        r = dict()
+        for key, value in obj.iteritems():
+            r[key] = to_serializable(value)
+        return r
+    return obj
 
 
-def get_storage(name, schema=None):
+class ArrayProxy(collections.MutableSequence):
     """
-    Create a connection to an Sqlite database and optionally create the schema.
-    The schema should be a dictionary mapping table names to a list of field definitions.
-    The REGEXP operator is supported through Python's regular expression package.
-
-    For example:
-
-    schema = {
-        'person': [
-            ('id', 'primary key'),
-            ('firstname', 'text'),
-            ('lastname', 'text not null')
-        ],
-        'email': [
-            ('id', 'primary key'),
-            ('person_id', 'int references person(id)')
-        ]
-    }
+    A proxy for a persistently stored JSON array.
     """
-    conn = sqlite3.connect(qq.get_data_filename(name + '.sqlite3'))
-    conn.row_factory = sqlite3.Row
-    conn.isolation_level = None
-    def regex(pattern, item):
-        try:
-            return re.match(pattern, item) is not None
-        except Exception as e:
-            return False
-    conn.create_function('regexp', 2, regex)
-    if schema is not None:
-        create_schema(conn, schema)
-    return conn
+
+    def __init__(self, data, storage):
+        self.data = data
+        self.storage = storage
+
+    def __delitem__(self, index):
+        del self.data[index]
+        self.storage.save()
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __setitem__(self, index, value):
+        self.data[index] = value
+        self.storage.save()
+
+    def __repr__(self):
+        return repr(self.data)
+
+    def insert(self, index, value):
+        self.data.insert(index, value)
+        self.storage.save()
+
+
+class ObjectProxy(collections.MutableMapping):
+    """
+    A proxy for a persistently stored JSON object.
+    """
+
+    def __init__(self, data, storage):
+        self.data = data
+        self.storage = storage
+
+    def __len__(self):
+        return len(self.data)
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __getitem__(self, key):
+        value = self.data[key]
+        if isinstance(value, basestring):
+            return value
+        if isinstance(value, collections.Mapping):
+            return ObjectProxy(value, self.storage)
+        elif isinstance(value, collections.Sequence):
+            return ArrayProxy(value, self.storage)
+        return value
+
+    def __delitem__(self, key):
+        del self.data[key]
+        self.storage.save()
+
+    def __setitem__(self, key, value):
+        self.data[key] = value
+        self.storage.save()
+
+    def __repr__(self):
+        return repr(self.data)
+
+
+class Storage(collections.MutableMapping):
+    """
+    Simple container for data, serialized to JSON.
+    """
+
+    def save(self):
+        with open(self.filename, 'w') as f:
+            json.dump(to_serializable(self.data), f, indent=2, sort_keys=True)
+
+    def load(self):
+        if not os.path.exists(self.filename):
+            with open(self.filename, 'w+') as f:
+                f.write('{}')
+        with open(self.filename, 'r') as f:
+            try:
+                self.data = ObjectProxy(json.load(f), self)
+            except:
+                self.data = ObjectProxy(dict(), self)
+
+    def __init__(self, name):
+        self.data = None
+        self.name = name
+        self.filename = qq.get_data_filename(self.name + '.json')
+        self.load()
+
+    def __len__(self):
+        return len(self.data)
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __contains__(self, item):
+        keyparts = item.split('.')
+        obj = self.data
+        for part in keyparts:
+            if part not in obj:
+                return False
+            obj = obj[part]
+        return True
+
+    def __getitem__(self, item):
+        keyparts = item.split('.')
+        obj = self.data
+        for part in keyparts[:-1]:
+            if part not in obj:
+                raise KeyError(part)
+            obj = obj[part]
+        return obj[keyparts[-1]]
+
+    def __setitem__(self, item, value):
+        keyparts = item.split('.')
+        obj = self.data
+        for part in keyparts[:-1]:
+            if part not in obj or not isinstance(obj[part], collections.Mapping):
+                obj[part] = dict()
+            obj = obj[part]
+        obj[keyparts[-1]] = value
+
+    def __delitem__(self, item):
+        keyparts = item.split('.')
+        obj = self.data
+        for part in keyparts[:-1]:
+            if part not in obj:
+                raise KeyError(part)
+            obj = obj[part]
+        del obj[keyparts[-1]]
