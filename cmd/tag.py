@@ -79,8 +79,11 @@ class DeleteTagCommand(qq.QQCommand):
 
     def execute(self, name):
         tags = TagStorage()
-        tags['tags'].pop(name, None)
-        qq.output('Untagged folder {} with name "{}"'.format(row['path'], row['name']))
+        path = tags['tags'].pop(name, None)
+        if path:
+            qq.output('Untagged folder {} with name "{}"'.format(path, name))
+        else:
+            qq.output('Tag not found: ' + name)
         return True
 
     def help(self):
